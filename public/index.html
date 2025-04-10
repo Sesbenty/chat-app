@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+</head>
+<body>
+    <h1>Chat App</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="message" placeholder="Enter message">
+    <button id="send">Send</button>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const messageInput = document.getElementById('message');
+        const sendButton = document.getElementById('send');
+
+        const ws = new WebSocket('ws://localhost:8080/ws');
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket');
+        };
+
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            const messageElement = document.createElement('p');
+            messageElement.textContent = `${message.sender}: ${message.content}`;
+            chatbox.appendChild(messageElement);
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+            console.log('Disconnected from WebSocket');
+        };
+
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value;
+            if (message.trim() !== '') {
+                ws.send(JSON.stringify({ sender: 'User', content: message }));
+                messageInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
