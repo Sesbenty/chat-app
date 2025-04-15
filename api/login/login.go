@@ -140,7 +140,6 @@ func AuthAPIMiddleware() gin.HandlerFunc {
 		tokenString, err := c.Cookie("token")
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-			c.Redirect(http.StatusMovedPermanently, "/login")
 			return
 		}
 
@@ -153,7 +152,6 @@ func AuthAPIMiddleware() gin.HandlerFunc {
 
 		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			c.Redirect(http.StatusMovedPermanently, "/login")
 			return
 		}
 

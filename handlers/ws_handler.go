@@ -30,10 +30,6 @@ func WsHandler(h *hub.Hub) gin.HandlerFunc {
 		}
 		username := c.GetString("username")
 		new_client := &hub.Client{Conn: conn, Name: username, Send: make(chan models.Message, 256)}
-		if err != nil {
-			log.Println(err)
-			return
-		}
 		h.Register <- new_client
 
 		// Allow collection of memory referenced by the caller by doing all work in

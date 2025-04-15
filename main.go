@@ -29,7 +29,7 @@ func main() {
 	content_group.GET("/chat", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "index.html", nil)
 	})
-	content_group.GET("/rooms", func(ctx *gin.Context) {
+	content_group.GET("/room", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "rooms.html", nil)
 	})
 	content_group.GET("/room/:id", func(ctx *gin.Context) {
