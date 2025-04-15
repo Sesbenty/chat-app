@@ -39,6 +39,7 @@ func ReadPump(h *hub.Hub, c *hub.Client) {
 			log.Printf("error unmarshalling message: %v", err)
 			continue
 		}
+		msg.Sender = c.Name
 		msg.Timestamp = time.Now()
 		h.Broadcast <- msg
 	}

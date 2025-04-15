@@ -9,10 +9,14 @@
 
 <body>
     <h1>Login</h1>
+    <div>
+        <a href="/register">Register</a>
+        <a href="/forgot-password">Forgot Password</a>
+    </div>
     <form id="loginForm">
         <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
         </div>
         <div>
             <label for="password">Password:</label>
@@ -26,15 +30,15 @@
         loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             const response = await fetch('api/v1/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
+                }, 
+                body: JSON.stringify({ email, password })
             });
             console.log(response);
             if (response.ok) {

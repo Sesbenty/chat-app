@@ -20,11 +20,20 @@ func main() {
 	router.GET("/login", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "login.html", nil)
 	})
+	router.GET("/register", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "register.html", nil)
+	})
 
-	conten_group := router.Group("/")
-	conten_group.Use(login.AuthRedirectMiddleware())
-	conten_group.GET("/chat", func(ctx *gin.Context) {
+	content_group := router.Group("/")
+	content_group.Use(login.AuthRedirectMiddleware())
+	content_group.GET("/chat", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "index.html", nil)
+	})
+	content_group.GET("/rooms", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "rooms.html", nil)
+	})
+	content_group.GET("/room/:id", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "room.html", nil)
 	})
 
 	auth_group := router.Group("/api/v1/auth")
@@ -37,8 +46,11 @@ func main() {
 	rooms_group.GET("/", room.GetRooms)
 	rooms_group.POST("/", room.CreateRoom)
 	rooms_group.DELETE("/:id", room.DeleteRoom)
+	rooms_group.PUT("/:id", room.UpdateRoom)
+	rooms_group.GET("/:id/messages", room.GetMessages)
 
 	v1 := router.Group("/api/v1")
+	v1.Use(login.AuthAPIMiddleware())
 	v1.GET("/ws", handlers.WsHandler(h))
 
 	log.Println("Starting server on :8080")

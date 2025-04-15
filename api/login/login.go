@@ -14,7 +14,7 @@ import (
 )
 
 type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -60,7 +60,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	user, exist := UserDatabase[request.Username]
+	user, exist := UserDatabase[request.Email]
 	if !exist || !checkPassword(user.Password, request.Password) {
 		c.JSON(401, gin.H{"error": "Invalid username or password"})
 		return
@@ -99,7 +99,7 @@ func RegisterHandler(c *gin.Context) {
 		Password: hashedPassword,
 	}
 
-	UserDatabase[newUser.Username] = newUser
+	UserDatabase[newUser.Email] = newUser
 	c.JSON(http.StatusOK, RegisterResponse{Message: "User registered successfully"})
 }
 
@@ -113,6 +113,7 @@ func AuthRedirectMiddleware() gin.HandlerFunc {
 		var tokenString string
 		tokenString, err := c.Cookie("token")
 		if err != nil {
+			log.Println(err)
 			c.Redirect(http.StatusMovedPermanently, "/login")
 			return
 		}
@@ -125,6 +126,7 @@ func AuthRedirectMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
+			log.Println(err)
 			c.Redirect(http.StatusMovedPermanently, "/login")
 			return
 		}

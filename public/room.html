@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room</title>
+</head>
+<body>
+    <h1>Room</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="message" placeholder="Enter message">
+    <button id="send">Send</button>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const messageInput = document.getElementById('message');
+        const sendButton = document.getElementById('send');
+        const roomId = window.location.pathname.split('/').pop();
+
+        fetch(`/api/v1/rooms/${roomId}/messages`, { method: 'GET'})
+        .then(response => response.json())
+        .then(messages => {
+            messages.forEach(message => {
+                const messageElement = document.createElement('p')
+                messageElement.textContent = `User:${message.content}`;
+                chatbox.appendChild(messageElement);
+            }
+        )})
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+        
+        const ws = new WebSocket(`ws://localhost:8080/api/v1/ws?room_id=${roomId}`);
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket');
+        };
+
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            const messageElement = document.createElement('p');
+            messageElement.textContent = `${message.sender}: ${message.content}`;
+            chatbox.appendChild(messageElement);
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+            console.log('Disconnected from WebSocket');
+        };
+
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value;
+            if (message.trim() !== '') {
+                ws.send(JSON.stringify({ sender: 'User', content: message, room_id: roomId }));
+                messageInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
