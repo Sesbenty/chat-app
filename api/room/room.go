@@ -1,9 +1,8 @@
 package room
 
 import (
+	"chat-app/adapters"
 	"chat-app/models"
-	"maps"
-	"slices"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -35,10 +34,12 @@ var MessagesDatabase = map[int64]models.MessageData{
 	10: {ID: 10, RoomID: 2, Content: "Have a good day!", UserID: 3},
 }
 
-var id int64 = 3
-
 func GetRooms(c *gin.Context) {
-	c.JSON(200, slices.Collect(maps.Values(RoomDatabase)))
+	rooms, err := adapters.GetRooms()
+	if err != nil {
+		c.JSON(400, gin.H{"error": "no access"})
+	}
+	c.JSON(200, rooms)
 }
 
 func CreateRoom(c *gin.Context) {
@@ -49,12 +50,13 @@ func CreateRoom(c *gin.Context) {
 	}
 
 	room := models.Room{
-		ID:   id,
 		Name: request.Name,
 	}
-	id++
-	RoomDatabase[room.ID] = room
-	c.JSON(200, request)
+	id, err := adapters.AddRoom(room)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	}
+	c.JSON(200, id)
 }
 
 func DeleteRoom(c *gin.Context) {
@@ -82,5 +84,5 @@ func GetMessages(c *gin.Context) {
 			messages = append(messages, MessagesDatabase[k])
 		}
 	}
-	c.JSON(200, messages)	
-	}
+	c.JSON(200, messages)
+}

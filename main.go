@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chat-app/adapters"
 	"chat-app/api/login"
 	"chat-app/api/room"
 	"chat-app/handlers"
@@ -9,9 +10,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Unable to Load the env file.", err)
+	}
+}
+
 func main() {
+	adapters.InitDB()
 	h := hub.NewHub()
 	go h.Run()
 	router := gin.Default()

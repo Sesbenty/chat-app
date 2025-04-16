@@ -1,6 +1,7 @@
 package login
 
 import (
+	"chat-app/adapters"
 	"chat-app/models"
 	"fmt"
 	"log"
@@ -34,10 +35,6 @@ type RegisterResponse struct {
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-var UserDatabase = map[string]models.User{
-	"a.shanin@mail.com": {Username: "Alexander", Email: "a.shanin@mail.com", Password: hashPassword("password1")},
-}
-
 func hashPassword(password string) []byte {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -46,9 +43,11 @@ func hashPassword(password string) []byte {
 	return hashedPassword
 }
 
-func checkPassword(hassedPassword []byte, password string) bool {
-	err := bcrypt.CompareHashAndPassword(hassedPassword, []byte(password))
-	log.Println(err)
+func checkPassword(hashedPassword []byte, password string) bool {
+	err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	if err != nil {
+		log.Println(err)
+	}
 	return err == nil
 }
 
@@ -60,8 +59,8 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	user, exist := UserDatabase[request.Email]
-	if !exist || !checkPassword(user.Password, request.Password) {
+	user, err := adapters.GetUserByEmail(request.Email)
+	if err != nil || !checkPassword(user.Password, request.Password) {
 		c.JSON(401, gin.H{"error": "Invalid username or password"})
 		return
 	}
@@ -87,7 +86,7 @@ func RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	if _, exist := UserDatabase[request.Username]; exist {
+	if _, err := adapters.GetUserByEmail(request.Email); err == nil {
 		c.JSON(400, gin.H{"error": "Username already exists"})
 		return
 	}
@@ -99,7 +98,7 @@ func RegisterHandler(c *gin.Context) {
 		Password: hashedPassword,
 	}
 
-	UserDatabase[newUser.Email] = newUser
+	adapters.AddUser(newUser)
 	c.JSON(http.StatusOK, RegisterResponse{Message: "User registered successfully"})
 }
 
